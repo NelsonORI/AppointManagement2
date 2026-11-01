@@ -1,4 +1,4 @@
-package com.example.appointmentmanagementsystem.ui.auth
+package com.example.appointmentmanagement.ui.auth
 
 import android.content.Intent
 import android.os.Bundle
