@@ -2,4 +2,6 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
+    // Registers the Safe Args plugin for sub-modules to use
+    alias(libs.plugins.navigation.safeargs) apply false
 }
