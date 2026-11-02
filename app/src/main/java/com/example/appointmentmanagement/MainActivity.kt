@@ -5,29 +5,35 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.widget.Toast
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.core.view.MenuProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.setupWithNavController
 import com.example.appointmentmanagement.databinding.ActivityMainBinding
 import com.example.appointmentmanagement.ui.auth.LoginActivity
 
 /**
- * Main shell activity hosting navigation fragments and the application toolbar.
+ * Main shell activity hosting navigation fragments, the application toolbar,
+ * and the navigation drawer.
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
+    private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Set MaterialToolbar as Support Action Bar
         setSupportActionBar(binding.toolbar)
 
         // Retrieve NavController from the NavHostFragment container
@@ -35,10 +41,46 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
-        // Automatically sync toolbar title and up/back button with current destination
-        NavigationUI.setupActionBarWithNavController(this, navController)
+        // Top-level destinations where hamburger icon is displayed instead of Up arrow
+        appBarConfiguration = AppBarConfiguration(
+            setOf(
+                R.id.nav_dashboard,
+                R.id.nav_book_appointment,
+                R.id.nav_my_appointments
+            ),
+            binding.drawerLayout
+        )
 
+        // Connect Toolbar and Drawer with NavController
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
+        NavigationUI.setupWithNavController(binding.navView, navController)
+
+        // Explicitly handle toolbar navigation icon click to open the drawer
+        binding.toolbar.setNavigationOnClickListener {
+            if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            } else {
+                val isTopLevel = appBarConfiguration.topLevelDestinations.contains(navController.currentDestination?.id)
+                if (isTopLevel) {
+                    binding.drawerLayout.openDrawer(GravityCompat.START)
+                } else {
+                    navController.navigateUp()
+                }
+            }
+        }
+
+        setupDrawerHeaderEmail()
         setupMenu()
+    }
+
+    /**
+     * Reads user email passed from LoginActivity and displays it in the drawer header.
+     */
+    private fun setupDrawerHeaderEmail() {
+        val userEmail = intent.getStringExtra("USER_EMAIL") ?: "patient@example.com"
+        val headerView = binding.navView.getHeaderView(0)
+        val tvHeaderEmail = headerView.findViewById<TextView>(R.id.tvHeaderEmail)
+        tvHeaderEmail.text = userEmail
     }
 
     /**
@@ -96,9 +138,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Handles the toolbar Up navigation button using NavController.
+     * Handles Up navigation fallback.
      */
     override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp() || super.onSupportNavigateUp()
+        return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
