@@ -7,8 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.appointmentmanagement.databinding.FragmentBookAppointmentBinding
+import com.example.appointmentmanagement.model.Appointment
+import com.example.appointmentmanagement.model.AppointmentStatus
+import com.example.appointmentmanagement.repository.AppointmentRepository
 import java.util.Calendar
 import java.util.Locale
 
@@ -43,6 +47,11 @@ class BookAppointmentFragment : Fragment() {
 
         setupDoctorDropdown()
         setupDateAndTimePickers()
+
+        // Submit button click listener
+        binding.btnBookAppointment.setOnClickListener {
+            handleBookingSubmission()
+        }
     }
 
     /**
@@ -117,6 +126,96 @@ class BookAppointmentFragment : Fragment() {
             )
             timePicker.show()
         }
+    }
+
+    /**
+     * Validates all form inputs, creates an Appointment record,
+     * and saves it to the singleton AppointmentRepository.
+     */
+    private fun handleBookingSubmission() {
+        val patientName = binding.etPatientName.text.toString().trim()
+        val phone = binding.etPhone.text.toString().trim()
+        val doctor = binding.actvDoctor.text.toString().trim()
+        val date = binding.etDate.text.toString().trim()
+        val time = binding.etTime.text.toString().trim()
+        val reason = binding.etReason.text.toString().trim()
+
+        var isValid = true
+
+        // Validate Patient Name
+        if (patientName.isEmpty()) {
+            binding.tilPatientName.error = "Patient name is required"
+            isValid = false
+        } else {
+            binding.tilPatientName.error = null
+        }
+
+        // Validate Phone Number
+        if (phone.isEmpty()) {
+            binding.tilPhone.error = "Phone number is required"
+            isValid = false
+        } else if (phone.length < 10) {
+            binding.tilPhone.error = "Enter a valid phone number (at least 10 digits)"
+            isValid = false
+        } else {
+            binding.tilPhone.error = null
+        }
+
+        // Validate Doctor Selection
+        if (doctor.isEmpty()) {
+            binding.tilDoctor.error = "Please select a doctor"
+            isValid = false
+        } else {
+            binding.tilDoctor.error = null
+        }
+
+        // Validate Appointment Date
+        if (date.isEmpty()) {
+            binding.tilDate.error = "Please select an appointment date"
+            isValid = false
+        } else {
+            binding.tilDate.error = null
+        }
+
+        // Validate Appointment Time
+        if (time.isEmpty()) {
+            binding.tilTime.error = "Please select an appointment time"
+            isValid = false
+        } else {
+            binding.tilTime.error = null
+        }
+
+        // Validate Reason
+        if (reason.isEmpty()) {
+            binding.tilReason.error = "Please enter reason for consultation"
+            isValid = false
+        } else {
+            binding.tilReason.error = null
+        }
+
+        // Halt if validation failed
+        if (!isValid) return
+
+        // Instantiate new Appointment model
+        val newAppointment = Appointment(
+            id = AppointmentRepository.generateNextId(),
+            patientName = patientName,
+            phone = phone,
+            doctorName = doctor,
+            date = date,
+            time = time,
+            reason = reason,
+            status = AppointmentStatus.BOOKED
+        )
+
+        // Save to in-memory repository
+        AppointmentRepository.addAppointment(newAppointment)
+
+        Toast.makeText(
+            requireContext(),
+            "Appointment scheduled successfully!",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     override fun onDestroyView() {
