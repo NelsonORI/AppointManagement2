@@ -18,10 +18,6 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.appointmentmanagement.databinding.ActivityMainBinding
 import com.example.appointmentmanagement.ui.auth.LoginActivity
 
-/**
- * Main shell activity hosting navigation fragments, the application toolbar,
- * and the navigation drawer.
- */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -33,15 +29,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Set MaterialToolbar as Support Action Bar
-        setSupportActionBar(binding.toolbar)
-
         // Retrieve NavController from the NavHostFragment container
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
-        // Top-level destinations where hamburger icon is displayed instead of Up arrow
+        // Top-level destinations: on these screens, show hamburger icon; on all others, show back arrow
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_dashboard,
@@ -51,31 +44,26 @@ class MainActivity : AppCompatActivity() {
             binding.drawerLayout
         )
 
-        // Connect Toolbar and Drawer with NavController
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
-        NavigationUI.setupWithNavController(binding.navView, navController)
+        // Bind Toolbar directly to NavController with AppBarConfiguration
+        // This automatically handles toggling between the hamburger icon and back arrow
+        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
 
-        // Explicitly handle toolbar navigation icon click to open the drawer
-        binding.toolbar.setNavigationOnClickListener {
-            if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+        // Bind Drawer NavigationView to NavController
+        binding.navView.setupWithNavController(navController)
+
+        // Ensure clicking an item in the drawer closes the drawer after navigating
+        binding.navView.setNavigationItemSelectedListener { menuItem ->
+            val handled = NavigationUI.onNavDestinationSelected(menuItem, navController)
+            if (handled) {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
-            } else {
-                val isTopLevel = appBarConfiguration.topLevelDestinations.contains(navController.currentDestination?.id)
-                if (isTopLevel) {
-                    binding.drawerLayout.openDrawer(GravityCompat.START)
-                } else {
-                    navController.navigateUp()
-                }
             }
+            handled
         }
 
         setupDrawerHeaderEmail()
         setupMenu()
     }
 
-    /**
-     * Reads user email passed from LoginActivity and displays it in the drawer header.
-     */
     private fun setupDrawerHeaderEmail() {
         val userEmail = intent.getStringExtra("USER_EMAIL") ?: "patient@example.com"
         val headerView = binding.navView.getHeaderView(0)
@@ -83,34 +71,24 @@ class MainActivity : AppCompatActivity() {
         tvHeaderEmail.text = userEmail
     }
 
-    /**
-     * Attaches MenuProvider to supply toolbar options menu items.
-     */
     private fun setupMenu() {
-        addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.main_menu, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_about -> {
-                        showAboutDialog()
-                        true
-                    }
-                    R.id.action_logout -> {
-                        confirmLogout()
-                        true
-                    }
-                    else -> false
+        // Inflate toolbar options menu directly on the MaterialToolbar
+        binding.toolbar.inflateMenu(R.menu.main_menu)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_about -> {
+                    showAboutDialog()
+                    true
                 }
+                R.id.action_logout -> {
+                    confirmLogout()
+                    true
+                }
+                else -> false
             }
-        })
+        }
     }
 
-    /**
-     * Displays clinic information in an alert dialog.
-     */
     private fun showAboutDialog() {
         AlertDialog.Builder(this)
             .setTitle("About CarePoint Clinic")
@@ -119,9 +97,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /**
-     * Confirms and executes user session sign out.
-     */
     private fun confirmLogout() {
         AlertDialog.Builder(this)
             .setTitle("Logout")
@@ -135,12 +110,5 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    /**
-     * Handles Up navigation fallback.
-     */
-    override fun onSupportNavigateUp(): Boolean {
-        return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
