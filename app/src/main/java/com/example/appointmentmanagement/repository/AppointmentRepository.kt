@@ -1,7 +1,7 @@
-package com.example.appointmentmanagementsystem.repository
+package com.example.appointmentmanagement.repository
 
-import com.example.appointmentmanagementsystem.model.Appointment
-import com.example.appointmentmanagementsystem.model.AppointmentStatus
+import com.example.appointmentmanagement.model.Appointment
+import com.example.appointmentmanagement.model.AppointmentStatus
 
 /**
  * Singleton repository managing appointment records in memory.

@@ -1,4 +1,4 @@
-package com.example.appointmentmanagementsystem.model
+package com.example.appointmentmanagement.model
 
 import java.io.Serializable
 
