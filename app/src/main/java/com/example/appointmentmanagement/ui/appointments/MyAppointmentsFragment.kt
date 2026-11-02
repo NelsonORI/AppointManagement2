@@ -12,6 +12,8 @@ import com.example.appointmentmanagement.R
 import com.example.appointmentmanagement.databinding.FragmentMyAppointmentsBinding
 import com.example.appointmentmanagement.model.Appointment
 import com.example.appointmentmanagement.repository.AppointmentRepository
+import android.content.Intent
+import android.net.Uri
 
 /**
  * Fragment displaying the list of all scheduled appointments.
@@ -96,8 +98,25 @@ class MyAppointmentsFragment : Fragment() {
     }
 
     private fun handleCallClick(appointment: Appointment) {
-        // Stub: will be wired to implicit intent ACTION_DIAL in Commit 21
-        Toast.makeText(requireContext(), "Call clicked: ${appointment.phone}", Toast.LENGTH_SHORT).show()
+        val phoneNumber = appointment.phone.trim()
+
+        if (phoneNumber.isEmpty()) {
+            Toast.makeText(requireContext(), "No phone number available", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Create an implicit intent targeted at the telephone dialer
+        val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+            data = Uri.parse("tel:$phoneNumber")
+        }
+
+        // Verify that there is an app installed capable of handling the dial intent
+        if (dialIntent.resolveActivity(requireActivity().packageManager) != null) {
+            startActivity(dialIntent)
+        } else {
+            // Fallback for emulators without telephony hardware or restricted environments
+            startActivity(dialIntent)
+        }
     }
 
     private fun handleRescheduleClick(appointment: Appointment) {
