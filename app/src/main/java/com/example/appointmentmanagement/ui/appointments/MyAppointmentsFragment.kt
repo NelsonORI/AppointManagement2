@@ -16,6 +16,11 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AlertDialog
 import com.example.appointmentmanagement.model.AppointmentStatus
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import com.example.appointmentmanagement.databinding.DialogRescheduleBinding
+import java.util.Calendar
+import java.util.Locale
 
 /**
  * Fragment displaying the list of all scheduled appointments.
@@ -124,9 +129,93 @@ class MyAppointmentsFragment : Fragment() {
         }
     }
 
+    /**
+     * Displays a custom AlertDialog to update the appointment's date and time.
+     */
     private fun handleRescheduleClick(appointment: Appointment) {
-        // Stub: will be wired to reschedule dialog in Commit 23
-        Toast.makeText(requireContext(), "Reschedule clicked: ${appointment.patientName}", Toast.LENGTH_SHORT).show()
+        val dialogBinding = DialogRescheduleBinding.inflate(layoutInflater)
+        val calendar = Calendar.getInstance()
+
+        dialogBinding.tvRescheduleDoctorInfo.text =
+            "Rescheduling visit with ${appointment.doctorName}\nCurrent: ${appointment.date} at ${appointment.time}"
+
+        dialogBinding.etRescheduleDate.setText(appointment.date)
+        dialogBinding.etRescheduleTime.setText(appointment.time)
+
+        // Setup DatePicker on dialog date input
+        dialogBinding.etRescheduleDate.setOnClickListener {
+            val datePicker = DatePickerDialog(
+                requireContext(),
+                { _, selectedYear, selectedMonth, selectedDay ->
+                    val formattedDate = String.format(
+                        Locale.getDefault(),
+                        "%02d/%02d/%04d",
+                        selectedDay,
+                        selectedMonth + 1,
+                        selectedYear
+                    )
+                    dialogBinding.etRescheduleDate.setText(formattedDate)
+                    dialogBinding.tilRescheduleDate.error = null
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
+            datePicker.datePicker.minDate = System.currentTimeMillis() - 1000
+            datePicker.show()
+        }
+
+        // Setup TimePicker on dialog time input
+        dialogBinding.etRescheduleTime.setOnClickListener {
+            val timePicker = TimePickerDialog(
+                requireContext(),
+                { _, selectedHour, selectedMinute ->
+                    val amPm = if (selectedHour < 12) "AM" else "PM"
+                    val hourIn12 = if (selectedHour == 0 || selectedHour == 12) 12 else selectedHour % 12
+                    val formattedTime = String.format(
+                        Locale.getDefault(),
+                        "%02d:%02d %s",
+                        hourIn12,
+                        selectedMinute,
+                        amPm
+                    )
+                    dialogBinding.etRescheduleTime.setText(formattedTime)
+                    dialogBinding.tilRescheduleTime.error = null
+                },
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                false
+            )
+            timePicker.show()
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Reschedule Appointment")
+            .setView(dialogBinding.root)
+            .setPositiveButton("Save") { _, _ ->
+                val newDate = dialogBinding.etRescheduleDate.text.toString().trim()
+                val newTime = dialogBinding.etRescheduleTime.text.toString().trim()
+
+                if (newDate.isEmpty() || newTime.isEmpty()) {
+                    Toast.makeText(requireContext(), "Date and time cannot be empty", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                val success = AppointmentRepository.rescheduleAppointment(
+                    id = appointment.id,
+                    newDate = newDate,
+                    newTime = newTime
+                )
+
+                if (success) {
+                    Toast.makeText(requireContext(), "Appointment rescheduled to $newDate at $newTime", Toast.LENGTH_SHORT).show()
+                    loadAppointments()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to reschedule appointment", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun handleDeleteClick(appointment: Appointment) {

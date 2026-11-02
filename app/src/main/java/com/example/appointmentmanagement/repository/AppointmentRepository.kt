@@ -123,4 +123,26 @@ object AppointmentRepository {
     fun generateNextId(): Long {
         return System.currentTimeMillis()
     }
+
+    /**
+     * Updates the date and time for an existing appointment record.
+     *
+     * @param id The unique identifier of the appointment.
+     * @param newDate The updated date string.
+     * @param newTime The updated time string.
+     * @return True if the record was found and updated, false otherwise.
+     */
+    fun rescheduleAppointment(id: Long, newDate: String, newTime: String): Boolean {
+        val index = appointments.indexOfFirst { it.id == id }
+        if (index != -1) {
+            val existing = appointments[index]
+            appointments[index] = existing.copy(
+                date = newDate,
+                time = newTime,
+                status = AppointmentStatus.BOOKED // resets or maintains booked status
+            )
+            return true
+        }
+        return false
+    }
 }
