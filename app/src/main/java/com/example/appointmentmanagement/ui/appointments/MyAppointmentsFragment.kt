@@ -14,6 +14,8 @@ import com.example.appointmentmanagement.model.Appointment
 import com.example.appointmentmanagement.repository.AppointmentRepository
 import android.content.Intent
 import android.net.Uri
+import androidx.appcompat.app.AlertDialog
+import com.example.appointmentmanagement.model.AppointmentStatus
 
 /**
  * Fragment displaying the list of all scheduled appointments.
@@ -58,6 +60,9 @@ class MyAppointmentsFragment : Fragment() {
             },
             onRescheduleClick = { appointment ->
                 handleRescheduleClick(appointment)
+            },
+            onCancelClick = { appointment ->
+                showCancelConfirmationDialog(appointment)
             },
             onDeleteClick = { appointment ->
                 handleDeleteClick(appointment)
@@ -127,6 +132,31 @@ class MyAppointmentsFragment : Fragment() {
     private fun handleDeleteClick(appointment: Appointment) {
         // Stub: will be wired to delete confirmation in Commit 24
         Toast.makeText(requireContext(), "Delete clicked: ${appointment.patientName}", Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Prompts the user with a confirmation dialog before cancelling an appointment.
+     */
+    private fun showCancelConfirmationDialog(appointment: Appointment) {
+        if (appointment.status == AppointmentStatus.CANCELLED) {
+            Toast.makeText(requireContext(), "This appointment is already cancelled", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Cancel Appointment")
+            .setMessage("Are you sure you want to cancel the appointment with ${appointment.doctorName} on ${appointment.date}?")
+            .setPositiveButton("Yes, Cancel") { _, _ ->
+                val success = AppointmentRepository.updateStatus(appointment.id, AppointmentStatus.CANCELLED)
+                if (success) {
+                    Toast.makeText(requireContext(), "Appointment cancelled successfully", Toast.LENGTH_SHORT).show()
+                    loadAppointments()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to update appointment", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("No", null)
+            .show()
     }
 
     override fun onDestroyView() {

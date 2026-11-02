@@ -138,14 +138,28 @@
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="2dp"
                 android:text="Reschedule"
                 android:textSize="12sp"
                 app:layout_constraintStart_toEndOf="@id/btnCall"
                 app:layout_constraintTop_toTopOf="@id/btnCall"
                 app:layout_constraintBottom_toBottomOf="@id/btnCall" />
 
-            <!-- Action: Cancel / Options Button -->
+            <!-- Action: Cancel Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:text="Cancel"
+                android:textColor="@android:color/holo_orange_dark"
+                android:textSize="12sp"
+                app:layout_constraintStart_toEndOf="@id/btnReschedule"
+                app:layout_constraintTop_toTopOf="@id/btnCall"
+                app:layout_constraintBottom_toBottomOf="@id/btnCall" />
+
+            <!-- Action: Delete Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDelete"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
