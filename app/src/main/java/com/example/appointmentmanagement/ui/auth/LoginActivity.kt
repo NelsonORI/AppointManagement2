@@ -3,6 +3,8 @@ package com.example.appointmentmanagement.ui.auth
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.appointmentmanagement.MainActivity
 import com.example.appointmentmanagement.databinding.ActivityLoginBinding
@@ -14,6 +16,21 @@ class LoginActivity : AppCompatActivity() {
 
     // View Binding reference generated from activity_login.xml
     private lateinit var binding: ActivityLoginBinding
+
+    // Contract launcher to receive the registered email back from RegisterActivity
+    private val registerLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                // Extract returned email extra
+                val registeredEmail = result.data?.getStringExtra("REGISTERED_EMAIL")
+                if (!registeredEmail.isNullOrEmpty()) {
+                    // Pre-fill email field and place focus on password field
+                    binding.etEmail.setText(registeredEmail)
+                    binding.etPassword.requestFocus()
+                    Toast.makeText(this, "Account created! Please sign in", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,10 +50,10 @@ class LoginActivity : AppCompatActivity() {
             handleLogin()
         }
 
-        // Navigate to registration screen
+        // Navigate to registration screen expecting a result
         binding.tvGoToRegister.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
+            registerLauncher.launch(intent)
         }
     }
 

@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.appointmentmanagement.databinding.ActivityRegisterBinding
-
+import android.content.Intent
 /**
  * Handles new patient registration with input validation.
  */
@@ -106,6 +106,15 @@ class RegisterActivity : AppCompatActivity() {
 
         // Registration successful message
         Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
+
+        // Create an Intent to return the registered email back to LoginActivity
+        val resultIntent = Intent().apply {
+            putExtra("REGISTERED_EMAIL", email)
+        }
+        // Set the activity result code and bundle data
+        setResult(RESULT_OK, resultIntent)
+
+        // Close RegisterActivity and return to LoginActivity
         finish()
     }
 }
