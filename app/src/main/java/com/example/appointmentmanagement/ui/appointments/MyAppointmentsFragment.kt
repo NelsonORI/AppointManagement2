@@ -218,9 +218,24 @@ class MyAppointmentsFragment : Fragment() {
             .show()
     }
 
+    /**
+     * Prompts the user with an AlertDialog before permanently deleting an appointment.
+     */
     private fun handleDeleteClick(appointment: Appointment) {
-        // Stub: will be wired to delete confirmation in Commit 24
-        Toast.makeText(requireContext(), "Delete clicked: ${appointment.patientName}", Toast.LENGTH_SHORT).show()
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Appointment")
+            .setMessage("Are you sure you want to permanently delete the appointment for ${appointment.patientName} with ${appointment.doctorName}?")
+            .setPositiveButton("Delete") { _, _ ->
+                val removed = AppointmentRepository.deleteAppointment(appointment.id)
+                if (removed) {
+                    Toast.makeText(requireContext(), "Appointment deleted", Toast.LENGTH_SHORT).show()
+                    loadAppointments()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to delete appointment", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     /**
