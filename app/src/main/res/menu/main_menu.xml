@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- About dialog action -->
+    <item
+        android:id="@+id/action_about"
+        android:orderInCategory="100"
+        android:title="About Clinic"
+        app:showAsAction="never" />
+
+    <!-- Logout action -->
+    <item
+        android:id="@+id/action_logout"
+        android:orderInCategory="101"
+        android:title="Logout"
+        app:showAsAction="never" />
+
+</menu>
