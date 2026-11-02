@@ -12,12 +12,10 @@
         android:label="Dashboard"
         tools:layout="@layout/fragment_dashboard">
 
-        <!-- Action: Dashboard -> Book Appointment -->
         <action
             android:id="@+id/action_dashboard_to_bookAppointment"
             app:destination="@id/nav_book_appointment" />
 
-        <!-- Action: Dashboard -> My Appointments -->
         <action
             android:id="@+id/action_dashboard_to_myAppointments"
             app:destination="@id/nav_my_appointments" />
@@ -30,7 +28,7 @@
         android:label="Book Appointment"
         tools:layout="@layout/fragment_book_appointment">
 
-        <!-- Action returning to list after saving, popping back up to dashboard -->
+        <!-- Routes to appointment list, popping up to dashboard so back button doesn't loop back to booking form -->
         <action
             android:id="@+id/action_bookAppointment_to_myAppointments"
             app:destination="@id/nav_my_appointments"
@@ -44,6 +42,13 @@
         android:name="com.example.appointmentmanagement.ui.appointments.MyAppointmentsFragment"
         android:label="My Appointments"
         tools:layout="@layout/fragment_my_appointments">
+
+        <!-- Safe Args argument declaration -->
+        <argument
+            android:name="newAppointment"
+            app:argType="com.example.appointmentmanagement.model.Appointment"
+            app:nullable="true"
+            android:defaultValue="@null" />
 
         <action
             android:id="@+id/action_myAppointments_to_bookAppointment"
